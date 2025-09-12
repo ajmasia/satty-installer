@@ -103,7 +103,7 @@ else
   JSON="$($DL "$API_URL")"
 
   if command -v jq >/dev/null 2>&1; then
-    ASSET_URL="$(printf "%s" "$JSON" | jq -r '.assets[].browser_download_url | select(test(\"x86_64.*unknown-linux-gnu.*\\\\.tar\\\\.gz$\";\"i\"))' | head -n1)"
+    ASSET_URL="$(printf "%s" "$JSON" | jq -r '.assets[].browser_download_url | select(test("x86_64.*unknown-linux-gnu.*\\.tar\\.gz$"; "i"))' | head -n1)"
   else
     ASSET_URL="$(printf "%s" "$JSON" |
       grep -oE '\"browser_download_url\":\\s*\"[^\"]+\"' |
