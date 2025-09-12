@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
-# Satty Installer + Capture Script + GNOME Shortcut
+# Satty Installer + Capture Script
 # -------------------------------------------------
 # 1. Downloads and installs the latest Satty release into /opt/satty
-#    and creates a symlink in /usr/local/bin/satty.
+#    and creates a symlink in /usr/local/bin/satty (requires sudo).
 # 2. Installs the capture script (capture.sh) into ~/.local/bin/capture.
-#    If not found locally, downloads it from the repo.
-# 3. Creates a GNOME custom keyboard shortcut for the capture script,
-#    asking the user which keybinding to use (default: <Shift><Super>P).
+# 3. At the end, shows instructions to manually create a GNOME or KDE shortcut.
 
 set -euo pipefail
 
@@ -24,55 +22,15 @@ USER_BIN="$HOME/.local/bin"
 CAPTURE_LOCAL="capture.sh"
 CAPTURE_REMOTE="https://raw.githubusercontent.com/ajmasia/satty-installer/main/capture.sh"
 
-# --- GNOME keybinding settings ---
-GNOME_KEY="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
-GNOME_SCHEMA="org.gnome.settings-daemon.plugins.media-keys.custom-keybinding"
-
 # --- Helper functions ---
 need() { command -v "$1" >/dev/null 2>&1 || {
   echo "⚠️ Missing dependency: '$1'. Please install it and try again." >&2
   exit 1
 }; }
 
-cleanup() { rm -rf "$TMP"; }
-
-create_shortcut() {
-  local name="satty-capture"
-  local binding="${1:-<Shift><Super>P}"
-  local command="$CAPTURE_SCRIPT"
-  local key_path="$GNOME_KEY/$name/"
-  local existing new
-
-  existing=$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
-
-  # Normalize empty list
-  if [[ "$existing" == "@as []" || "$existing" == "[]" ]]; then
-    new="['$key_path']"
-  else
-    # Avoid duplicates
-    if [[ "$existing" == *"$key_path"* ]]; then
-      echo "⚠️  Shortcut '$name' already exists → $binding"
-      return
-    fi
-    # Append new path
-    new=$(echo "$existing" | sed "s/]$/, '$key_path']/")
-  fi
-
-  echo ">> Registering GNOME custom shortcut '$name' ..."
-  gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "$new"
-
-  gsettings set "$GNOME_SCHEMA:$key_path" name "$name"
-  gsettings set "$GNOME_SCHEMA:$key_path" command "$command"
-  gsettings set "$GNOME_SCHEMA:$key_path" binding "$binding"
-
-  echo "✅ Custom shortcut created: $binding → $command"
+cleanup() {
+  [[ -d "$TMP" ]] && rm -rf "$TMP"
 }
-
-# --- Must be run as root ---
-if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root. Use: sudo bash $0" >&2
-  exit 1
-fi
 
 # --- Required dependencies ---
 need tar
@@ -89,10 +47,11 @@ else
   exit 1
 fi
 
-# --- Install Satty ---
+# --- Create temporary workspace ---
 TMP="$(mktemp -d)"
 trap cleanup EXIT
 
+# --- Install Satty ---
 if [[ -d "$OPT_DIR" ]]; then
   echo "⚠️  Satty is already installed in $OPT_DIR."
 else
@@ -119,10 +78,10 @@ else
   echo ">> Downloading: $ASSET_URL"
   $DL "$ASSET_URL" >"$ARCHIVE"
 
-  echo ">> Extracting into $OPT_DIR..."
-  rm -rf "$OPT_DIR"
-  mkdir -p "$OPT_DIR"
-  tar -xzf "$ARCHIVE" -C "$OPT_DIR" --strip-components=1
+  echo ">> Extracting into $OPT_DIR (sudo required)..."
+  sudo rm -rf "$OPT_DIR"
+  sudo mkdir -p "$OPT_DIR"
+  sudo tar -xzf "$ARCHIVE" -C "$OPT_DIR" --strip-components=1
 
   BIN_PATH="$(find "$OPT_DIR" -type f -name "$APP" -perm -111 | head -n1 || true)"
   [[ -z "$BIN_PATH" ]] && {
@@ -130,8 +89,8 @@ else
     exit 1
   }
 
-  echo ">> Creating symlink: $BIN_LINK -> $BIN_PATH"
-  ln -sfn "$BIN_PATH" "$BIN_LINK"
+  echo ">> Creating symlink (sudo required): $BIN_LINK -> $BIN_PATH"
+  sudo ln -sfn "$BIN_PATH" "$BIN_LINK"
 
   INSTALL_VERSION="$("$BIN_PATH" --version 2>/dev/null | head -n1 || true)"
   echo "✅ $INSTALL_VERSION installed in $OPT_DIR"
@@ -146,26 +105,26 @@ if [[ -f "$CAPTURE_LOCAL" ]]; then
   install -m 755 "$CAPTURE_LOCAL" "$USER_BIN/$CAPTURE_SCRIPT"
 else
   echo ">> Downloading capture.sh from repository..."
-  curl -fsSL "$CAPTURE_REMOTE" -o /tmp/capture.sh
-  install -m 755 /tmp/capture.sh "$USER_BIN/$CAPTURE_SCRIPT"
+  curl -fsSL "$CAPTURE_REMOTE" -o "$TMP/capture.sh"
+  install -m 755 "$TMP/capture.sh" "$USER_BIN/$CAPTURE_SCRIPT"
 fi
-
-# --- Check extra dependencies for capture.sh ---
-# for dep in gnome-screenshot wl-copy; do
-#   if ! command -v "$dep" >/dev/null 2>&1; then
-#     echo "⚠️  Warning: '$dep' is required by the capture script but not installed."
-#   fi
-# done
-
-# --- Configure GNOME shortcut ---
-read -rp "Choose GNOME shortcut (default: <Shift><Super>P): " user_binding
-binding="${user_binding:-<Shift><Super>P}"
-
-create_shortcut "$binding"
 
 # --- Final summary ---
 echo
 echo "🎉 Installation complete."
 echo "   - Satty installed: $BIN_LINK"
 echo "   - Capture script:  $USER_BIN/$CAPTURE_SCRIPT"
-echo "   - GNOME shortcut:  $binding"
+echo
+echo "💡 To finish setup, create a custom shortcut manually"
+echo
+echo "GNOME:"
+echo "  Settings → Keyboard → Keyboard Shortcuts → Custom Shortcuts → Add"
+echo "    Name:     Satty Capture"
+echo "    Command:  capture"
+echo "    Shortcut: <Shift><Super>P"
+echo
+echo "KDE Plasma:"
+echo "  System Settings → Shortcuts → Custom Shortcuts"
+echo "    New → Global Shortcut → Command/URL"
+echo "    Trigger:   Meta+Shift+P"
+echo "    Action:    capture"
