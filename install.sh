@@ -153,6 +153,16 @@ else
   install -m 755 "$TMP/capture.sh" "$USER_BIN/$CAPTURE_SCRIPT"
 fi
 
+# --- PATH check for ~/.local/bin ---
+if [[ ":$PATH:" != *":$USER_BIN:"* ]]; then
+  echo
+  echo "⚠️ Warning: $USER_BIN is not in your PATH."
+  echo "   To fix this, add the following line to your ~/.bashrc or ~/.zshrc:"
+  echo "     export PATH=\"\$HOME/.local/bin:\$PATH\""
+  echo "   Then restart your shell or run:"
+  echo "     source ~/.bashrc"
+fi
+
 # --- Final summary ---
 echo
 echo "🎉 Installation complete."
