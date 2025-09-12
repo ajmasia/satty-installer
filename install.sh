@@ -8,6 +8,14 @@
 
 set -euo pipefail
 
+# --- Installer version ---
+INSTALLER_VERSION="1.0.0"
+
+if [[ "${1:-}" == "--version" ]]; then
+  echo "Satty Installer version $INSTALLER_VERSION"
+  exit 0
+fi
+
 # --- Flags ---
 AUTO_YES=false
 if [[ "${1:-}" == "--yes" ]]; then
@@ -210,3 +218,5 @@ echo "  System Settings → Shortcuts → Custom Shortcuts"
 echo "    New → Global Shortcut → Command/URL"
 echo "    Trigger:   Meta+Shift+P"
 echo "    Action:    bash -c ~/.local/bin/capture"
+echo
+echo "📦 Satty Installer version: $INSTALLER_VERSION"
