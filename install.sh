@@ -8,6 +8,12 @@
 
 set -euo pipefail
 
+# --- Flags ---
+AUTO_YES=false
+if [[ "${1:-}" == "--yes" ]]; then
+  AUTO_YES=true
+fi
+
 # --- App and repo information ---
 APP="satty"
 REPO="gabm/Satty"
@@ -39,19 +45,28 @@ check_deps() {
     echo "❌ Some dependencies are missing: ${MISSING_DEPS[*]}" >&2
 
     if command -v apt >/dev/null 2>&1; then
-      echo "👉 They can be installed with:" >&2
+      echo "👉 They can be installed automatically with apt:" >&2
       echo "   sudo apt update && sudo apt install -y ${MISSING_DEPS[*]}" >&2
       echo
-      read -rp "Do you want to install them now? [Y/n]: " reply
-      reply=${reply,,} # lowercase
+
+      local reply
+      if $AUTO_YES; then
+        reply="y"
+      else
+        # force interactive prompt even if running via curl | bash
+        read -rp "Do you want to install them now? [Y/n]: " reply </dev/tty || true
+      fi
+
+      reply=${reply,,}
       if [[ -z "$reply" || "$reply" == "y" || "$reply" == "yes" ]]; then
+        echo ">> Installing missing dependencies..."
         sudo apt update
         sudo apt install -y "${MISSING_DEPS[@]}"
         return
       fi
     fi
 
-    echo "⚠️ Please install the missing dependencies and re-run this installer." >&2
+    echo "⚠️ Please install the missing dependencies manually and re-run this installer." >&2
     exit 1
   fi
 }
