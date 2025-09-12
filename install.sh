@@ -22,22 +22,51 @@ USER_BIN="$HOME/.local/bin"
 CAPTURE_LOCAL="capture.sh"
 CAPTURE_REMOTE="https://raw.githubusercontent.com/ajmasia/satty-installer/main/capture.sh"
 
-# --- Helper functions ---
-need() { command -v "$1" >/dev/null 2>&1 || {
-  echo "⚠️ Missing dependency: '$1'. Please install it and try again." >&2
-  exit 1
-}; }
+# --- Dependencies ---
+DEPS=(tar curl install gnome-screenshot)
+MISSING_DEPS=()
+
+need() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "⚠️ Missing dependency: '$1'." >&2
+    MISSING_DEPS+=("$1")
+  fi
+}
+
+check_deps() {
+  if [[ ${#MISSING_DEPS[@]} -gt 0 ]]; then
+    echo
+    echo "❌ Some dependencies are missing: ${MISSING_DEPS[*]}" >&2
+
+    if command -v apt >/dev/null 2>&1; then
+      echo "👉 They can be installed with:" >&2
+      echo "   sudo apt update && sudo apt install -y ${MISSING_DEPS[*]}" >&2
+      echo
+      read -rp "Do you want to install them now? [Y/n]: " reply
+      reply=${reply,,} # lowercase
+      if [[ -z "$reply" || "$reply" == "y" || "$reply" == "yes" ]]; then
+        sudo apt update
+        sudo apt install -y "${MISSING_DEPS[@]}"
+        return
+      fi
+    fi
+
+    echo "⚠️ Please install the missing dependencies and re-run this installer." >&2
+    exit 1
+  fi
+}
 
 cleanup() {
   [[ -d "$TMP" ]] && rm -rf "$TMP"
 }
 
-# --- Required dependencies ---
-need tar
-need curl
-need install
-need gnome-screenshot
+# --- Check dependencies ---
+for dep in "${DEPS[@]}"; do
+  need "$dep"
+done
+check_deps
 
+# --- Select downloader ---
 if command -v curl >/dev/null 2>&1; then
   DL="curl -fsSL"
 elif command -v wget >/dev/null 2>&1; then
@@ -59,12 +88,12 @@ else
   JSON="$($DL "$API_URL")"
 
   if command -v jq >/dev/null 2>&1; then
-    ASSET_URL="$(printf "%s" "$JSON" | jq -r '.assets[].browser_download_url | select(test("x86_64.*unknown-linux-gnu.*\\.tar\\.gz$";"i"))' | head -n1)"
+    ASSET_URL="$(printf "%s" "$JSON" | jq -r '.assets[].browser_download_url | select(test(\"x86_64.*unknown-linux-gnu.*\\\\.tar\\\\.gz$\";\"i\"))' | head -n1)"
   else
     ASSET_URL="$(printf "%s" "$JSON" |
-      grep -oE '"browser_download_url":\s*"[^"]+"' |
-      grep -oE 'https://[^"]+' |
-      grep -iE 'x86_64.*unknown-linux-gnu.*\.tar\.gz' |
+      grep -oE '\"browser_download_url\":\\s*\"[^\"]+\"' |
+      grep -oE 'https://[^\\\"]+' |
+      grep -iE 'x86_64.*unknown-linux-gnu.*\\.tar\\.gz' |
       head -n1)"
   fi
 
