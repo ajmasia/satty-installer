@@ -29,7 +29,7 @@ CAPTURE_LOCAL="capture.sh"
 CAPTURE_REMOTE="https://raw.githubusercontent.com/ajmasia/satty-installer/main/capture.sh"
 
 # --- Dependencies ---
-DEPS=(tar curl install gnome-screenshot)
+DEPS=(tar curl install gnome-screenshot wl-clipboard)
 MISSING_DEPS=()
 
 need() {
