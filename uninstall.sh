@@ -3,6 +3,10 @@
 # -------------------------------------------------
 # Removes Satty from /opt/satty, the symlink from /usr/local/bin/satty,
 # and the capture script from ~/.local/bin/capture.
+#
+# Usage:
+#   Local:   ./uninstall.sh
+#   Remote:  curl -fsSL https://raw.githubusercontent.com/<your-username>/satty-installer/main/uninstall.sh | bash
 
 set -euo pipefail
 
@@ -43,4 +47,4 @@ echo "   - Removed: $OPT_DIR"
 echo "   - Removed: $BIN_LINK"
 echo "   - Removed: $CAPTURE_SCRIPT"
 echo
-echo "💡 Remember, if you created custom shortcuts in GNOME or KDE, please remove them manually."
+echo "💡 Remember: if you created custom shortcuts in GNOME or KDE, please remove them manually."
