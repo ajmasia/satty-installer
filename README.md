@@ -7,7 +7,7 @@ This project simplifies the installation of [Satty](https://github.com/gabm/Satt
 ### Method 1: Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/satty-installer.git
+git clone git@github.com:ajmasia/satty-installer.git
 cd satty-installer
 ./install.sh
 ```
@@ -15,7 +15,7 @@ cd satty-installer
 ### Method 2: Install directly without cloning
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<your-username>/satty-installer/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ajmasia/satty-installer/main/install.sh | bash
 ```
 
 The installer will:
@@ -37,7 +37,7 @@ There are two ways to uninstall Satty and the helper script:
 ### Method 2: Run uninstall remotely
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<your-username>/satty-installer/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ajmasia/satty-installer/main/uninstall.sh | bash
 ```
 
 Both methods will remove:
