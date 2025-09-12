@@ -69,12 +69,15 @@ The installer **does not automatically create the shortcut**. You must configure
 
 ## ⚠️ Dependencies
 
-* `gnome-screenshot` (on GNOME) or `spectacle` (on KDE, if you adapt the script).
-* `wl-copy` for clipboard integration.
-* `curl` or `wget` for downloads.
-* `tar` and `install` for binary installation.
+The following dependencies are required:
+
+* `curl` or `wget` → to download files.
+* `tar` and `install` → to extract and install binaries.
+* `jq` (optional) → faster release asset parsing (falls back to grep if missing).
+* `gnome-screenshot` (for GNOME users) or `spectacle` (for KDE users, if you adapt the script).
+* `wl-copy` → to copy the edited screenshot to the clipboard.
+* `notify-send` (from `libnotify-bin`) → to show system notifications.
 
 ## 📜 License
 
 This project is licensed under the terms of the [GNU General Public License](./LICENSE).
-
