@@ -18,6 +18,20 @@ cd satty-installer
 curl -fsSL https://raw.githubusercontent.com/ajmasia/satty-installer/main/install.sh | bash
 ```
 
+### Auto-install dependencies
+
+If you want the installer to automatically install missing dependencies without asking, use the `--yes` flag:
+
+```bash
+./install.sh --yes
+```
+
+Or remotely:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ajmasia/satty-installer/main/install.sh | bash -s -- --yes
+```
+
 The installer will:
 
 * Download and install the latest version of **Satty** into `/opt/satty`.
