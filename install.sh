@@ -202,11 +202,11 @@ echo
 echo "GNOME:"
 echo "  Settings → Keyboard → Keyboard Shortcuts → Custom Shortcuts → Add"
 echo "    Name:     Satty Capture"
-echo "    Command:  capture"
+echo "    Command:  bash -c ~/.local/bin/capture"
 echo "    Shortcut: <Shift><Super>P"
 echo
 echo "KDE Plasma:"
 echo "  System Settings → Shortcuts → Custom Shortcuts"
 echo "    New → Global Shortcut → Command/URL"
 echo "    Trigger:   Meta+Shift+P"
-echo "    Action:    capture"
+echo "    Action:    bash -c ~/.local/bin/capture"
