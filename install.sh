@@ -154,13 +154,41 @@ else
 fi
 
 # --- PATH check for ~/.local/bin ---
+echo ">> Checking if $USER_BIN is in your PATH..."
+
 if [[ ":$PATH:" != *":$USER_BIN:"* ]]; then
-  echo
   echo "⚠️ Warning: $USER_BIN is not in your PATH."
-  echo "   To fix this, add the following line to your ~/.bashrc or ~/.zshrc:"
-  echo "     export PATH=\"\$HOME/.local/bin:\$PATH\""
-  echo "   Then restart your shell or run:"
-  echo "     source ~/.bashrc"
+
+  # Detect shell
+  shell_name=$(basename "$SHELL")
+  case "$shell_name" in
+  bash) rc_file="$HOME/.bashrc" ;;
+  zsh) rc_file="$HOME/.zshrc" ;;
+  *) rc_file="" ;;
+  esac
+
+  if [[ -n "$rc_file" ]]; then
+    echo "👉 You can fix this by adding the following line to $rc_file:"
+    echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
+    echo
+
+    read -rp "Do you want me to add it automatically to $rc_file? [Y/n]: " reply </dev/tty || true
+    reply=${reply,,}
+
+    if [[ -z "$reply" || "$reply" == "y" || "$reply" == "yes" ]]; then
+      if ! grep -Fxq 'export PATH="$HOME/.local/bin:$PATH"' "$rc_file" 2>/dev/null; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >>"$rc_file"
+        echo "✅ Added to $rc_file. Please reload your shell or run: source $rc_file"
+      else
+        echo "ℹ️ The PATH line already exists in $rc_file, skipping."
+      fi
+    fi
+  else
+    echo "👉 Add this line manually to your shell config (~/.bashrc, ~/.zshrc, etc.):"
+    echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
+  fi
+else
+  echo "✅ $USER_BIN is already in your PATH."
 fi
 
 # --- Final summary ---
