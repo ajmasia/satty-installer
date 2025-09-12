@@ -4,6 +4,7 @@
 # 1. Downloads and installs the latest Satty release into /opt/satty
 #    and creates a symlink in /usr/local/bin/satty.
 # 2. Installs the capture script (capture.sh) into ~/.local/bin/capture.
+#    If not found locally, downloads it from the repo.
 # 3. Creates a GNOME custom keyboard shortcut for the capture script,
 #    asking the user which keybinding to use (default: <Shift><Super>P).
 
@@ -20,6 +21,8 @@ BIN_LINK="/usr/local/bin/$APP"
 # --- Capture script installation ---
 CAPTURE_SCRIPT="capture"
 USER_BIN="$HOME/.local/bin"
+CAPTURE_LOCAL="capture.sh"
+CAPTURE_REMOTE="https://raw.githubusercontent.com/ajmasia/satty-installer/main/capture.sh"
 
 # --- GNOME keybinding settings ---
 GNOME_KEY="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
@@ -137,14 +140,22 @@ fi
 # --- Install capture script ---
 echo ">> Installing capture script into $USER_BIN/$CAPTURE_SCRIPT"
 mkdir -p "$USER_BIN"
-install -m 755 capture.sh "$USER_BIN/$CAPTURE_SCRIPT"
+
+if [[ -f "$CAPTURE_LOCAL" ]]; then
+  echo ">> Found local capture.sh"
+  install -m 755 "$CAPTURE_LOCAL" "$USER_BIN/$CAPTURE_SCRIPT"
+else
+  echo ">> Downloading capture.sh from repository..."
+  curl -fsSL "$CAPTURE_REMOTE" -o /tmp/capture.sh
+  install -m 755 /tmp/capture.sh "$USER_BIN/$CAPTURE_SCRIPT"
+fi
 
 # --- Check extra dependencies for capture.sh ---
-for dep in gnome-screenshot wl-copy; do
-  if ! command -v "$dep" >/dev/null 2>&1; then
-    echo "⚠️  Warning: '$dep' is required by the capture script but not installed."
-  fi
-done
+# for dep in gnome-screenshot wl-copy; do
+#   if ! command -v "$dep" >/dev/null 2>&1; then
+#     echo "⚠️  Warning: '$dep' is required by the capture script but not installed."
+#   fi
+# done
 
 # --- Configure GNOME shortcut ---
 read -rp "Choose GNOME shortcut (default: <Shift><Super>P): " user_binding
