@@ -26,17 +26,35 @@ The installer will:
 
 ## 📦 Uninstallation
 
-To remove Satty and the helper script, run:
+There are two ways to uninstall Satty and the helper script:
+
+### Method 1: Using the provided script (local)
 
 ```bash
 ./uninstall.sh
 ```
 
-This will remove:
+### Method 2: Run uninstall remotely
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/<your-username>/satty-installer/main/uninstall.sh | bash
+```
+
+Both methods will remove:
 
 * `/opt/satty`
 * `/usr/local/bin/satty`
 * `~/.local/bin/capture`
+
+### Method 3: Manual removal
+
+If you prefer, you can manually remove the installed files:
+
+```bash
+sudo rm -rf /opt/satty
+sudo rm -f /usr/local/bin/satty
+rm -f ~/.local/bin/capture
+```
 
 ## ⌨️ Keyboard Shortcut Setup
 
