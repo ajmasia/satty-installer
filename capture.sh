@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-SATTY_ICON_PATH=/opt/satty/icons/satty.svg
+SATTY_ICON_PATH=/otp/satty/icons/satty.svg
 
 notify() {
   notify-send "Satty Screenshot" "$*" -i $SATTY_ICON_PATH
