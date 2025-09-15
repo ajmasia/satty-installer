@@ -4,8 +4,10 @@
 
 set -euo pipefail
 
+SATTY_ICON_PATH=/opt/satty/icons/satty.svg
+
 notify() {
-  notify-send "Satty Screenshot" "$*"
+  notify-send "Satty Screenshot" "$*" -i $SATTY_ICON_PATH
 }
 
 need() { command -v "$1" >/dev/null 2>&1 || {
